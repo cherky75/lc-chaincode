@@ -94,6 +94,7 @@ func (t *SimpleChaincode) Query(stub *shim.ChaincodeStub, function string, args 
 		fmt.Println("hi there " + function) //error
 		return nil, nil
 	} else if function == "read" {
+		fmt.Println("read function called")
 		t.read(stub, args)
 	}
 
