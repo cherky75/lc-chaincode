@@ -120,7 +120,7 @@ func (t *SimpleChaincode) create(stub *shim.ChaincodeStub, args []string) ([]byt
 		return nil, errors.New("2nd argument must be a numeric string")
 	}
 
-	str := "{'id': '" + args[0] + "','amount': '" + strconv.Itoa(amount) + "'}"
+	str := "{id: '" + args[0] + "',amount: '" + strconv.Itoa(amount) + "'}"
 	err = stub.PutState(args[0], []byte(str))
 	if err != nil {
 		return nil, err
