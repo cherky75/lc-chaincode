@@ -17,8 +17,10 @@ limitations under the License.
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
@@ -28,6 +30,11 @@ type SimpleChaincode struct {
 }
 
 var lcIndexStr = "lcIndex"
+
+type Lc struct {
+	Id     string
+	Amount int
+}
 
 func main() {
 	err := shim.Start(new(SimpleChaincode))
@@ -94,6 +101,45 @@ func (t *SimpleChaincode) write(stub *shim.ChaincodeStub, args []string) ([]byte
 	if err != nil {
 		return nil, err
 	}
+	return nil, nil
+}
+
+func (t *SimpleChaincode) create(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+	var err error
+
+	if len(args) != 2 {
+		return nil, errors.New("Incorrect number of arguments. Expecting 4")
+	}
+	fmt.Println("start creating a marble")
+
+	amount, err := strconv.Atoi(args[1])
+	if err != nil {
+		return nil, errors.New("2nd argument must be a numeric string")
+	}
+
+	str := "{'id': '" + args[0] + "','amount': '" + strconv.Itoa(amount) + "'}"
+	err = stub.PutState(args[0], []byte(str))
+	if err != nil {
+		return nil, err
+	}
+
+	// lc index
+	lcsAsBytes, err := stub.GetState(lcIndexStr)
+	if err != nil {
+		return nil, errors.New("Failed to get marble index")
+	}
+	var lcIndex []string
+	json.Unmarshal(lcsAsBytes, &lcIndex)
+
+	// append
+	lcIndex = append(lcIndex, args[0])
+	fmt.Println("! lc index: ", lcIndex)
+	jsonAsBytes, _ := json.Marshal(lcIndex)
+	// store id of lc
+	err = stub.PutState(lcIndexStr, jsonAsBytes)
+
+	fmt.Println("end creating marble")
+
 	return nil, nil
 }
 
