@@ -17,10 +17,8 @@ limitations under the License.
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
@@ -44,25 +42,29 @@ func main() {
 // Init resets all the things
 func (t *SimpleChaincode) Init(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
 
-	var Aval int
+	//	var Aval int
 	var err error
 
 	if len(args) != 1 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 1")
 	}
-	Aval, err = strconv.Atoi(args[0])
-	if err != nil {
-		return nil, errors.New(("Expecting integer value for asset holding"))
-	}
 
-	err = stub.PutState("abc", []byte(strconv.Itoa(Aval)))
-	if err != nil {
-		return nil, err
-	}
+	// Initialize the chaincode
+	//	Aval, err = strconv.Atoi(args[0])
+	//	if err != nil {
+	//		return nil, errors.New(("Expecting integer value for asset holding"))
+	//	}
 
-	var empty []string
-	jsonAsBytes, _ := json.Marshal(empty)
-	err = stub.PutState(lcIndexStr, jsonAsBytes)
+	//	err = stub.PutState("abc", []byte(strconv.Itoa(Aval)))
+	//	if err != nil {
+	//		return nil, err
+	//	}
+
+	//	var empty []string
+	//	jsonAsBytes, _ := json.Marshal(empty)
+	//	err = stub.PutState(_lcIndexStr, jsonAsBytes)
+
+	err = stub.PutState(lcIndexStr, []byte(args[0]))
 	if err != nil {
 		return nil, err
 	}
@@ -90,10 +92,7 @@ func (t *SimpleChaincode) Query(stub *shim.ChaincodeStub, function string, args 
 	fmt.Println("query is running " + function)
 
 	// Handle different functions
-	if function == "dummy_query" { //read a variable
-		fmt.Println("hi there " + function) //error
-		return nil, nil
-	} else if function == "read" {
+	if function == "read" {
 		fmt.Println("read function called")
 		return t.read(stub, args)
 	}
