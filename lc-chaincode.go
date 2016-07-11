@@ -20,7 +20,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strconv"
+	//"strconv"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
@@ -31,9 +31,14 @@ type SimpleChaincode struct {
 
 var lcIndexStr = "lcIndex"
 
-type Lc struct {
-	Id     string
-	Amount int
+type LC struct {
+	Id           string `json:"cusip"`
+	Name         string `json:"name"`
+	ContractType string `json:"conracttype"`
+	Vendor       string `json:"vendor"`
+	Price        string `json:"price"`
+	Bank         string `json:"bank"`
+	Date         string `json:"date"`
 }
 
 func main() {
@@ -49,6 +54,7 @@ func (t *SimpleChaincode) Init(stub *shim.ChaincodeStub, function string, args [
 		return nil, errors.New("Incorrect number of arguments. Expecting 1")
 	}
 
+	// Initialize index list
 	err := stub.PutState(lcIndexStr, []byte(args[0]))
 	if err != nil {
 		return nil, err
@@ -108,26 +114,49 @@ func (t *SimpleChaincode) write(stub *shim.ChaincodeStub, args []string) ([]byte
 }
 
 func (t *SimpleChaincode) create(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
-	var err error
 
-	if len(args) != 2 {
+	if len(args) != 1 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 4")
 	}
-	fmt.Println("start creating a marble")
+	fmt.Println("start creating a l/c")
 
-	amount, err := strconv.Atoi(args[1])
+	var lc LC
+	var err error
+
+	err = json.Unmarshal([]byte(args[0]), &lc)
 	if err != nil {
-		return nil, errors.New("2nd argument must be a numeric string")
+		fmt.Println("error invalid L/C")
+		return nil, errors.New("Error Unmarshal L/C")
 	}
 
-	str := "{id: '" + args[0] + "',amount: '" + strconv.Itoa(amount) + "'}"
-	err = stub.PutState(args[0], []byte(str))
+	lcBytes, err := json.Marshal(&lc)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Error Marshal L/C")
 	}
 
-	// lc index
+	err = stub.PutState(lc.Id, lcBytes)
+
+	if err != nil {
+		return nil, errors.New("Error PutState L/C")
+	}
+	/*
+		amount, err := strconv.Atoi(args[1])
+		if err != nil {
+			return nil, errors.New("2nd argument must be a numeric string")
+		}
+
+		str := "{id: '" + args[0] + "',amount: '" + strconv.Itoa(amount) + "'}"
+		err = stub.PutState(args[0], []byte(str))
+		if err != nil {
+			return nil, err
+		}
+
+		// lc index
+		lcsAsBytes, err := stub.GetState(lcIndexStr)
+	*/
+
 	lcsAsBytes, err := stub.GetState(lcIndexStr)
+
 	if err != nil {
 		return nil, errors.New("Failed to get marble index")
 	}
@@ -135,9 +164,9 @@ func (t *SimpleChaincode) create(stub *shim.ChaincodeStub, args []string) ([]byt
 	json.Unmarshal(lcsAsBytes, &lcIndex)
 
 	// append
-	lcIndex = append(lcIndex, args[0])
+	lcIndex = append(lcIndex, lc.Id)
 	fmt.Println("! lc index: ", lcIndex)
-	jsonAsBytes, _ := json.Marshal(lcIndex)
+	jsonAsBytes, err := json.Marshal(lcIndex)
 	// store id of lc
 	err = stub.PutState(lcIndexStr, jsonAsBytes)
 
