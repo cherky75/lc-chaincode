@@ -32,11 +32,11 @@ type SimpleChaincode struct {
 var lcIndexStr = "lcIndex"
 
 type LC struct {
-	Id           string `json:"cusip"`
+	Id           string `json:"id"`
 	Name         string `json:"name"`
 	ContractType string `json:"conracttype"`
 	Vendor       string `json:"vendor"`
-	Price        string `json:"price"`
+	Price        int    `json:"price"`
 	Bank         string `json:"bank"`
 	Date         string `json:"date"`
 }
