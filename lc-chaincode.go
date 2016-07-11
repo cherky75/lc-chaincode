@@ -158,7 +158,7 @@ func (t *SimpleChaincode) create(stub *shim.ChaincodeStub, args []string) ([]byt
 	lcsAsBytes, err := stub.GetState(lcIndexStr)
 
 	if err != nil {
-		return nil, errors.New("Failed to get marble index")
+		return nil, errors.New("Failed to get index")
 	}
 	var lcIndex []string
 	json.Unmarshal(lcsAsBytes, &lcIndex)
@@ -169,6 +169,9 @@ func (t *SimpleChaincode) create(stub *shim.ChaincodeStub, args []string) ([]byt
 	jsonAsBytes, err := json.Marshal(lcIndex)
 	// store id of lc
 	err = stub.PutState(lcIndexStr, jsonAsBytes)
+	if err != nil {
+		return nil, errors.New("Failed to put index")
+	}
 
 	fmt.Println("end creating marble")
 
