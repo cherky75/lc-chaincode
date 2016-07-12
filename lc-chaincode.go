@@ -34,7 +34,7 @@ var lcIndexStr = "lcIndex"
 type LC struct {
 	Id           string `json:"id"`
 	Name         string `json:"name"`
-	ContractType string `json:"conracttype"`
+	ContractType string `json:"contracttype"`
 	Vendor       string `json:"vendor"`
 	Price        int    `json:"price"`
 	Bank         string `json:"bank"`
