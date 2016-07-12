@@ -55,7 +55,10 @@ func (t *SimpleChaincode) Init(stub *shim.ChaincodeStub, function string, args [
 	}
 
 	// Initialize index list
-	err := stub.PutState(lcIndexStr, []byte(args[0]))
+
+	var empty []string
+	jsonAsBytes, _ := json.Marshal(empty)
+	err := stub.PutState(lcIndexStr, jsonAsBytes)
 	if err != nil {
 		return nil, err
 	}
