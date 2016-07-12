@@ -88,6 +88,8 @@ func (t *SimpleChaincode) Query(stub *shim.ChaincodeStub, function string, args 
 	// Handle different functions
 	if function == "read" { //read a variable
 		return t.read(stub, args)
+	} else if function == "readAll" {
+		return t.readAll(stub, args)
 	}
 	fmt.Println("query did not find func: " + function)
 
@@ -195,4 +197,40 @@ func (t *SimpleChaincode) read(stub *shim.ChaincodeStub, args []string) ([]byte,
 	}
 
 	return valAsbytes, nil
+}
+
+func (t *SimpleChaincode) readAll(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+	var allLCs []LC
+
+	keysBytes, err := stub.GetState(lcIndexStr)
+	if err != nil {
+		fmt.Println("Error retrieving keys")
+		return nil, errors.New("Error retrieving keys")
+	}
+	var keys []string
+	err = json.Unmarshal(keysBytes, &keys)
+	if err != nil {
+		fmt.Println("Error unmarshalling")
+		return nil, errors.New("Error unmarshalling")
+	}
+
+	for _, value := range keys {
+		lcBytes, err := stub.GetState(value)
+
+		var lc LC
+		err = json.Unmarshal(lcBytes, &lc)
+		if err != nil {
+			fmt.Println("Error retrieving lc")
+			return nil, errors.New("Error retrieving LC " + value)
+		}
+		fmt.Println("Appending LC " + value)
+		allLCs = append(allLCs, lc)
+	}
+
+	allLCsBytes, err := json.Marshal(&allLCs)
+	if err != nil {
+		fmt.Println("Error marshalling All LCs")
+		return nil, errors.New("Error marshalling All LCs")
+	}
+	return allLCsBytes, nil
 }
